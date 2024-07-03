@@ -227,7 +227,67 @@
 
         > 뭐야 너무 당연한 이야기인데 당연하지 않듯이 말하니까 뭐지 싶었네
 
+    > We find that CLIP, similar to the GPT family, learns to perform a wide set of tasks during pre-training including OCR, geo-localization, action recognition, and many others.
+
+    - CLIP도 GPT처럼 pre-training을 통해 OCR, geo-localization 등등 다양한 거 할 수 있음.
+
+    > We measure this by benchmarking the zero-shot transfer performance of CLIP on over 30 existing datasets and find it can be competitive with prior task-specific supervised models.
+
+    - 30개가 넘는 기존 데이터셋을 사용하여 CLIP의 zero-shot transfer performance를 벤치마킹 -> competitive with prior task-specific supervised models
+
+    > We also confirm these findings with linear-probe representation learning analysis and show that CLIP outperforms the best publicly available ImageNet model while also being more computationally efficient
+
+    - linear-probe representation learning을 분석하니 ImageNet model 중 성능이 가장 좋았고, 효율도 괜찮았음.
+
+      > linear-probe: 특정 모델이 학습한 representation을 평가하는 방법. 모델이 학습한 표현을 고정하고 그 위에 linear regression을 학습시켜서 평가
+
+    > We additionally find that zero-shot CLIP models are much more robust than equivalent accuracy supervised ImageNet models which suggests that zero-shot evaluation of task-agnostic models is much more representative of a model’s capability. These results have significant policy and ethical implications, which we consider in Section 7.
+
+    - zero-shot CLIP이 비슷한 정확도의 다른 supervised 모델보다 robust?함. -> zero-shot evaluation이 task-agnostic 모델의 능력을 더 잘 대표함. -> 특정 작업 뿐만이 아닌, 범용성 높음.
+
+      > robustness: 모델이 다양한 조건에서 안정적으로 성능을 유지하는 능력. -> 데이터 변화 or 노이즈 등에 대해 얼마나 잘 유지하는지
+
+      \+ section 7에서 정책, 윤리적인 시사점? 관련해서도 이야기 함
+
 ---
+
+## 2. Approach
+
+### 1. Natural Language Supervision
+
+> At the core of our approach is the idea of learning perception from supervision contained in natural language
+
+- key idea: 자연어에 포함된 supervision을 통해 perception을 learning하는 것.
+
+> As
+> discussed in the introduction, this is not at all a new idea, however terminology used to describe work in this space is varied, even seemingly contradictory, and stated motivations are diverse.
+>
+> Joulin et al. (2016), and Desai & Johnson (2020) all introduce methods which learn visual representations from text paired with images but describe their approaches as unsupervised, self-supervised, weakly supervised, and supervised respectively.
+
+- 완전히 새 아이디어는 아님, 근데 제대로 정의되지 않은 부분이 많음 -> Joulin et al. (2016), and Desai & Johnson (2020)는 이미지와 pair된 텍스트로 표현함. but 얘네는 각각 approaches는 unspervised, self-supervised, weakly supervised, supervised로 접근했음
+
+  - 근데 이게 왜..? 뭐가 문제야
+
+> We emphasize that what is common across this line of work is not any of the details of the particular methods used but the appreciation of natural language as a training signal. All these approaches are learning from natural language supervision.
+
+- 여튼 다양한 방식이 사용됐지만, 모두 `자연어를 training signal`로 인식. -> 자연어를 통해 모델을 훈련시키는 접근 방식이 주요 키포인트.
+
+> Although early work wrestled with the complexity of natural language when using topic model and n-gram representations, improvements in deep contextual representation learning suggest we now have the tools to effectively leverage this abundant source of supervision (McCann et al., 2017).
+
+아니뭐야왤케길어요영어공부열심히해놓을걸
+
+- early work들은 자연어의 complexity로 어려움을 겪음 / topic model & n-gram representations을 사용할 때에..
+
+  > early work: 초기 연구
+  > topic model: 문서 내의 topic을 추출하는 기법<br>
+  > n-gram: 연속된 n개의 단어를 묶어서 language model을 만다는 방법
+
+- deep contextual representation learning에서의 발전 -> abundant source of supervision을 제대로 활용할 수 있는 도구가 생김.
+
+  - lstn? transformer? 도구는 이런 애들 말하는 건가?
+  - 아니면 bert나 gpt같은 모델들을 말하는 건가
+
+  > natural language는 말 그대로 내포하는 데이터 자체가 풍부해서 제대로 써먹을 수만 있다면 training data로 유용하게 쓰일 수 있음 -> 이걸 제대로 할 수 있게되었다는 걸 말하는듯
 
 ---
 
