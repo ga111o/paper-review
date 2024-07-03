@@ -88,7 +88,10 @@
      - 우리 모델 pre-training만 해도 성능 잘나와요.
      - 우리 모델 어따가 붙이든 잘 작동해요.
 
-   > training과 learning 차이점?
+   > training과 learning 차이?<br>
+   > train: 모델 파라미터 최적화<br>
+   > learn: "먼저, 학습은 지도 학습, 비지도 학습, 강화 학습과 같이 모델이 데이터나 경험을 통해 지식이나 스킬을 획득하는 과정입니다." ... "다시말해 학습의 일부로서 훈련이 이루어지며, 훈련을 통해 모델이 데이터에 대한 의미 있는 패턴을 학습하는 것입니다." [referenced here](https://byunghyun23.tistory.com/152)<br><br>
+   > 설명이 굉장히 추상적이라부난 뭔가 더 이상해져신디..
 
    > For instance, we match the accuracy of the original ResNet-50 on ImageNet zero-shot without needing to use any of the 1.28 million training examples it was trained on.
 
@@ -106,3 +109,135 @@
    논문 리뷰 생각보다 많이많이 힘들구나
 
 ---
+
+1.  Introduction and Motivating Work
+
+    - pre-training methods(raw text를 직접 사용하여 모델을 학습)들이 NLP 분야에서 중요한 변화를 이끌어냄. 위에서 말한 pre-training의 장점 다시 강조.<br>아래에 gpt3가 엥간한 supervised 모델들이랑 경쟁 가능한다고 하면서 이를 계속 강조함.
+
+    - autoregressive와 같은 Task-agnostic objectives(비종속 작업 목표?)는 모델 용량, 필요 컴퓨팅 자원 등을 늘리면서 성능을 향상.
+
+      > task-agnostic objectives: 특정 task에 한정되지 않는 모델<br>
+      > autoregressive: 자기 회귀 모델링
+
+    - text2text는 입출력 인터페이스?를 텍스트로 standardized함. -> task-agnostic objectives가 downstream dataset으로 zero-shot transfer 할 수 있도록 함.
+
+      > input-output interface: ?<br>
+      > downstream dataset: fine tuning을 위한 dataset. <br>downstream == fine tuning으로 봐도 무방할듯.
+
+    - nlp쪽에선 dataset을 만들 때에는 기존 high-quality의 crowed-datasets보다 web-scale collections을 사용한 pre-training이 더 좋았다고 함. -> nlp처럼 컴퓨터 비전도 기존 crowd labeled dataset 사용하지 말고, 웹에서 싹 긁어오는 건 어떻냐고 제안.
+
+    1.  `The olfactory bulb: coding and processing of odor molecule information` Mori et al. (1999)
+
+        > Over 20 years ago Mori et al. (1999) explored improving content based image retrieval by training a model to predict the nouns and adjectives in text documents paired with images.
+
+        - text document와 image를 pair 해서 데이터로 사용 -> 모델이 명사랑 형용사 예측하도록 학습시키는 방법으로 content based imgae retrieval을 improving 하려 함.
+
+          > Content-Based Image Retrieval (CBIR): db에 이미지들의 feature vector들을 저장, 새로운 이미지의 feature vector를 뽑고, 유사도 가장 높은 이미지를 반환하는 친구<br>
+          > Retrieval: 특정 기준에 맞는 이미지를 검색하고 가져오는 과정 전체?
+
+        <br>
+
+    2.  `Multi-attention Recurrent Network for Human Communication Comprehension` Quattoni et al., 2007
+
+        > Quattoni et al. (2007) demonstrated it was possible to learn more data efficient image representations via manifold learning in the weight space of classifiers trained to predict words in captions associated with images.
+
+        <br>
+
+    3.  `Multimodal Learning with Deep Boltzmann Machines` Srivastava & Salakhutdinov, 2012
+
+        > Srivastava & Salakhutdinov (2012) explored deep representation learning by training multimodal Deep Boltzmann Machines on top of low-level image and text tag features.
+
+        <br>
+
+    4.  `Bag of Tricks for Efficient Text Classification` Joulin et al., 2016
+
+        > Joulin et al. (2016) modernized this line of work and demonstrated that CNNs trained to predict words in image captions learn useful image representations.
+
+        - 연구 흐름을 현대화?해서 image cpations의 단어를 예측하게 train된 CNN이 유용한? 이미지 표현을 학습할 수 있음을 확인
+
+          > modernized: ? <br>
+          > useful: ?
+
+    5.  6.  ...
+
+    6.  CLIP
+
+        - CLIP은 이런 연구 흐름?의 최신 결과로, 이미지-텍스트 흐름의 최신 결과물로, 이미지-텍스트 pair로 학습된 표현이 다양한 transfer learning task에서 상당한 성능이 나옴을 보임.
+
+    <br>
+
+    > While exciting as proofs of concept, using natural language supervision for image representation learning is still rare. This is likely because demonstrated performance on common benchmarks is much lower than alternative approaches. For example, Li et al. (2017) reach only 11.5% accuracy on ImageNet in a zero-shot setting. This is well below the 88.4% accuracy of the current state of the art (Xie et al., 2020). It is even below the 50% accuracy of classic computer vision approaches (Deng et al., 2012). Instead, more narrowly scoped but well-targeted uses of weak supervision have improved performance. Mahajan et al. (2018) showed that predicting ImageNet-related hashtags on Instagram images is an effective pre-training task. When fine-tuned to ImageNet these pre-trained models increased accuracy by over 5% and improved the overall state of the art at the time. Kolesnikov et al. (2019) and Dosovitskiy et al. (2020) have also demonstrated large gains on a broader set of transfer benchmarks by pre-training models to predict the classes of the noisily labeled JFT-300M dataset.
+
+    - natural language supervision으로 image representation learning을 하는 것 자체는 exciting as proofs of concept하는데, 실제로 벤치 돌려보면 alternative approaches보다 아쉬운 성능을 냄.
+
+      > zero-shot ImageNet 정확도
+      >
+      > - 자연어 supervision Li et al. (2017): 11.5%
+      > - 최신 연구 Xie et al. (2020): 88.4%
+      > - 기존 연구 Deng et al. (2012): 50%
+
+      > natural language supervision: 이미지-텍스트로 image classifier를 trian
+
+    - 근데, weak supervision을 사용하니까 성능이 5% 이상 좋아짐. 여기서 말하는 weak supervision은 pre-trained model을 파인튜닝 하는 거 말하는듯
+
+      > weak supervision: 좁은 범위의 명확한 목표 -
+
+    - Kolesnikov et al. (2019)이랑 Dosovitskiy et al. (2020)에서 노이즈 가득가득한 라벨을 예측하도록 pre-training함. -> 벤치에서 상당히 잘 나옴.
+
+    > This line of work represents the current pragmatic middle ground between learning from a limited amount of supervised “gold-labels” and learning from practically unlimited amounts of raw text. However, it is not without compromises. Both works carefully design, and in the process limit, their supervision to 1000 and 18291 classes respectively. Natural language is able to express, and therefore supervise, a much wider set of visual concepts through its generality. Both approaches also use static softmax classifiers to perform prediction and lack a mechanism for dynamic outputs. This severely curtails their flexibility and limits their “zero-shot” capabilities.
+
+    - 위 2개 연구는 양이 limited된 gold-label이랑 unlimited된 raw text 사이에서의 중간 지점을 나타냄.
+
+      > gold-label: 사람이 직접 라벨링한 라벨들... <br>조니골드 땡기네 18년 말고 리저브로.. 맛은 어신디 그 스모키한 팔레트가 땡김
+
+    - 두 연구 다 supervision을 각각 1000개와 18291개의 클래스로 제한하도록 설계함.
+
+      \+ 자연어는 더 일반적이라서 gold-label보다 더 넓은 범위의 시각적 개념을 표현 & supervise할 수 있음.
+
+    - 둘 다 static softmax classifier를 사용해서 예측 -> dynamic-ouput이 부족..? -> flexibility랑 zero-shot의 한계
+
+    <br>
+
+    > ㅇㅇㄹㅇㄹㅇㄹ
+
+    - weak supervision: Mahajan et al. (2018), Kolesnikov et al. (2019)은 백만~십억 개의 이미지로 모델을 train하는데 accelerator years가 됨..?
+
+      > accelerator years: accelerator로 수년을 돌려야 한다 이런 뜻인가
+
+    - 자연어 supervision: VirTex, ICMLM, ConVIRT 등은 십만 개의 이미지를 train하는데 accelerator days가 됨.
+
+    > In this work, we close this gap and study the behaviors of image classifiers trained with natural language supervision at large scale. Enabled by the large amounts of publicly available data of this form on the internet, we create a new dataset of 400 million (image, text) pairs and demonstrate that a simplified version of ConVIRT trained from scratch, which we call CLIP, for Contrastive Language-Image Pre-training, is an efficient method of learning from natural language supervision.
+
+    - 이 work?에선 this gap?을 가깝게 하고, large scale의 natural language supervision으로 trained된 image classifier를 연구
+
+      > 여기서 말하는 `this gap`이 train 데이터를 말하는 건가..<br>
+      > close this gap: weak supervision과의 scale 차이를 줄인다 -> 자연어 supervision의 train scale을 늘린다 이렇게 해석하면 될듯
+
+    - 인터넷에서 400 million의 이미지-텍스트 데이터셋을 긁어옴
+
+    - CLIP(Contrastive Language-Image Pre-training)(단순화된 ConVIRT)은 효율적인 learning method from natural language supervision
+
+    > We study the scalability of CLIP by training a series of eight models spanning almost 2 orders of magnitude of compute and observe that transfer performance is a smoothly predictable function of compute
+
+    - CLIP 모델의 scalability를 연구 -> 2배의 컴퓨팅 크기의 8가지 모델을 훈련해서 transfer performance가 smoothly predictable function?인지
+
+      - transfer performance가 크기에 따라 부드럽게 예측 가능한 함수의 형태로 변함 -> 컴퓨팅 크기 증가에 따라 성능이 일정하게 증가
+
+      - 자원을 많이 넣을수록 성능 증가
+
+        > 뭐야 너무 당연한 이야기인데 당연하지 않듯이 말하니까 뭐지 싶었네
+
+---
+
+---
+
+- figure1.
+  ![alt text](figure1.png)
+
+  > While standard image models jointly train an image feature extractor and a linear classifier to predict some label, CLIP jointly trains an image encoder and a text encoder to predict the correct pairings of a batch of (image, text) training examples. At test time the learned text encoder synthesizes a zero-shot linear classifier by embedding the names or descriptions of the target dataset’s classes
+
+  - standard image models는 image feature extractor와 linear classifier를 함께 학습시켜 몇몇 라벨을 예측.
+
+  - CLIP은 image encoder와 text encoder를 함께 학습시켜 이미지-텍스트 pair의 training examples batch의 정확한 pairing을 예측.
+
+  -> 테스트 시 학습된 test encoder가 대상 dataset의 class name이나 description을 포함시켜서 zero-shot linear classifier를 합성?
