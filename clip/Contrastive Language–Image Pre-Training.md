@@ -268,13 +268,15 @@
 
   - 근데 이게 왜..? 뭐가 문제야
 
-> We emphasize that what is common across this line of work is not any of the details of the particular methods used but the appreciation of natural language as a training signal. All these approaches are learning from natural language supervision.
+> We emphasize that what is common across this line of work is not any of the details of the particular methods used but the appreciation of natural language as a training signal.
+>
+> All these approaches are learning from natural language supervision.
 
 - 여튼 다양한 방식이 사용됐지만, 모두 `자연어를 training signal`로 인식. -> 자연어를 통해 모델을 훈련시키는 접근 방식이 주요 키포인트.
 
 > Although early work wrestled with the complexity of natural language when using topic model and n-gram representations, improvements in deep contextual representation learning suggest we now have the tools to effectively leverage this abundant source of supervision (McCann et al., 2017).
 
-아니뭐야왤케길어요영어공부열심히해놓을걸
+뭐야왤케길어요영어공부열심히해놓을걸
 
 - early work들은 자연어의 complexity로 어려움을 겪음 / topic model & n-gram representations을 사용할 때에..
 
