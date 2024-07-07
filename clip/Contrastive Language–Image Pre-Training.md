@@ -359,13 +359,50 @@ open set of visual concepts
 
   - 암튼 contrastive model 사용해서 기본적인 Bag-of-Words encoding을 swapped 하고, & observed a further 4x efficiency improvement in the rate of zero-shot transfer to ImageNet.
 
-  2. how to train CLIP
+  2. simplification part
 
-  - N개의 이미지-텍스트 쌍의 batch
-  - goal
-    - batch 내에서 가능한 N \* N 개의 이미지-텍스트 조합 중, 실제로 일어난 N개의 쌍을 예측.
-    - image encoder와 text encoder를 사용해서 batch에서 N개의 실제 pair된 image embeding과 text embeding의 (N개) cosine simmilarity는 maximizing, 그 외에 embeding들(N^2 - N개)에서는 minimizing이 되도록.
-    - symmetric cross entropy loss로 similarity scores를 최적화.
+     - N개의 이미지-텍스트 쌍의 batch
+     - goal
+
+       - batch 내에서 가능한 N \* N 개의 이미지-텍스트 조합 중, 실제로 일어난 N개의 쌍을 예측.
+       - image encoder와 text encoder를 사용해서 batch에서 N개의 실제 pair된 image embeding과 text embeding의 (N개) cosine simmilarity는 maximizing, 그 외에 embeding들(N^2 - N개)에서는 minimizing이 되도록.
+       - symmetric cross entropy loss로 similarity scores를 최적화.
+
+     - 데이터 양이 워낙 많아서 over fitting문제는 없음.
+
+     - ImageNet weights나 pre-trained weights로 initializing 하는 것 없이 train -> 완전 zero-shot에 특화된 -
+
+     - do not use the non-linear projection between the representation and the contrastive embedding space -> linear projection만을 사용해서 각각의 encoder의 representation을 multi-modal embedding space으로 mapping.
+
+       > representation: encoder가 input data를 처리해서 생성하는 high-demention vector
+       >
+       > projection: input data를 lowe-dimension vector로 변환 -> 특징만 뽑아냄. cnn의 feature vector처럼 이해하면 될듯.
+       >
+       > contrastive embedding space: contrastive learning의 embedding vector. 비슷한 데이터는 가까운 vector로 표현하는
+       >
+       > multi-modal embedding space: 서로 다른 유형의 데이터를 같은 공간으로 mapping
+       >
+       > mapping: 한 집합의 요소를 다른 집합의 요소로 변환
+
+       > We did not notice a difference in training efficiency between the two versions and speculate that non-linear projections may be co-adapted with details of current image only in self-supervised representation learning methods.
+       >
+       > - linear와 non-linear 사이에 training efficiency 차이는 어신디, non-linear projection은 self-supervised representation learning methods에서만 current image의 details와 co-adapted될 수 있을 것 같다... 는 뭔 말이지
+
+     - clip의 pre-train dataset(img-txt pair)의 대부분의 sentence가 single sentence이기에 Zhang et al. (2020)에서 사용된 text transformation function을 제거.
+
+       > text transformation function: samples a single sentence at uniform from the text
+       >
+       > 얘를 지우는 게 뭔 의미가 있는 거지..? 이미 single sentence기에 굳이 이 func가 필요 없다는 건가
+
+     - image transformation function를 단순화, A random square crop from resized images가 training 중에 사용된 유일한 data augmentation.
+
+       > 안그래도 데이터 많은데 굳이 복잡하게 해서 일 생길 가능성을 만들지 않도록 하기 위해?
+
+     - softmax에서 range of the logits를 controls하는 temperature parameter인 τ는 hyper-parameter로 turning하는 것을 avoid하기 위해 log-parameterized된 multiplicative scalar를 training 중에 optimized.
+
+     -> dataset이 엥간히 큰 게 아니니까 over fitting 문제x -> 복잡한 기법들을 간소화
+
+---
 
 ---
 
