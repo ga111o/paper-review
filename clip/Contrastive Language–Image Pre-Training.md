@@ -253,7 +253,7 @@
 
 ## 2. Approach
 
-### 1. Natural Language Supervision
+### 2.1. Natural Language Supervision
 
 > At the core of our approach is the idea of learning perception from supervision contained in natural language
 
@@ -290,6 +290,82 @@
   - 아니면 bert나 gpt같은 모델들을 말하는 건가
 
   > natural language는 말 그대로 내포하는 데이터 자체가 풍부해서 제대로 써먹을 수만 있다면 training data로 유용하게 쓰일 수 있음 -> 이걸 제대로 할 수 있게되었다는 걸 말하는듯
+
+> Learning from natural language has several potential strengths over other training methods. It’s much easier to scale natural language supervision compared to standard crowd-sourced labeling for image classification since it does not require annotations to be in a classic “machine learning compatible format” such as the canonical 1-of-N majority vote “gold label”. Instead, methods which work on natural language can learn passively from the supervision contained in the vast amount of text on the internet. Learning from natural language also has an important advantage over most unsupervised or self-supervised learning approaches in that it doesn’t “just” learn a representation but also connects that representation to language which enables flexible zero-shot transfer. In the following subsections, we detail the specific approach we settled on.
+
+- 자연어로 학습하는 것 -> scability 뛰어남, 추가적인 labeling 필요 없음, 방대한 양의 텍스트 데이터 사용 가능 ...
+
+  - clip은 이렇게 자연어-이미지 함께 학습해서 zero-shot 뛰어남...
+
+  > 이걸 계속계속 강조하네
+
+### 2.2. Creating a Sufficiently Large Dataset
+
+1. 기존 데이터셋의 한계
+
+   - MS-COCO, Visual Genome: high quality crowd-labeled, 10만 장의 이미지
+     - 다른 computer vision systems은 인스타에서 가져온 3.5 billion 장의 이미지를 학습함 ->
+   - YFCC100M: 100 million 장의 이미지를 가져서 그나마 대안이 될 수 있음 but quality가 varying하고, metadata가 sparse함.
+     - 카메라 설정값, 의미 없는 제목 등을 거르니 15 million 장의 이미지만 남음.
+
+2. natural language supervision를 사용하는 이유
+
+   - 인터넷에는 large quantities of data가 있음. but 기존 dataset은 이를 잘 반영하지 못함.
+
+   - 이를 극복하기 위해 400 million의 이미지-텍스트 쌍을 인터넷에서 구함. + 500,000의 쿼리도 포함.
+
+   - class balance를 위해 쿼리당 최대 20,000의 이미지-텍스트 쌍을 포함.
+
+   - dataset의 단어 수는 gpt2를 학습시킬 때 사용한 WebText dataset과 비슷.
+
+   - We refer to this dataset as WIT for WebImageText.
+
+### 2.3. Selecting an Efficient Pre-Training Method
+
+open set of visual concepts
+
+- 최신 컴퓨터 비전 시스템의 계산 자원:
+  ResNeXt101-32x48d를 train하는데 19 GPU years 사용, Noisy Student EfficientNet-L2를 훈련시키는데 33 TPUv3 core-years 사용.. -> 대충 최근 나오는 컴퓨터 비전 시스템 훈련시키는데 굉장히 오래 걸림.
+
+  - 얘네들은 ImageNet dataset에 있는 1000개의 클래스만을 예측하기 위해서 훈련됨.
+
+- 위 모델들은 1000개의 클래스만을 예측하도록 훈련됨.
+
+- clip은 자연어로 open set of visual concepts 학습하는 것이 어렵긴 한데 어찌저찌해서 방법 찾아냄.
+
+  - natural language supervision을 successfully scaling하기 위해서는 training efficiency가 key라는 것을 찾음.
+
+- 초기엔 VirTex랑 비슷하게 image CNN - text transformer으로 이미지 caption을 예측하도록 함. but 이 방법은 efficiently scaling하는데 어려움이 발생.
+
+  > difficulties efficiently scaling: 더 많은 데이터나 더 큰 모델을 사용해도 성능 향상이 더딘 -
+
+  ![figure2](figure2.png)
+
+  - 63 million 파라미터를 가진 transformer language model이 ResNet-50 image encoder보다 compute를 배로 하지만, ImageNet 클래스를 recognize하는데 3배가 느림.
+
+  -> 복잡한 transformer language model을 사용하는 것이 오히려 비효율적일 수 있음 + 단순한 모델이 더 빠르고, 가벼운데 성능은 비슷.
+
+  - cuz 이런 방법들은 try to predict the exact words of the text accompanying each image하려 하기 때문. 이미지와 co-occur하는 descriptions, comments, and related text는 다양해서, 정확한 단어를 예측하는 것은 어려움.
+
+    -> 그래서 Contrastive Learning 사용.
+
+  - 최근 연구에서, 이미지에 대한 contrastive representation learning이 contrastive objectives보다 더 좋은 representation을 learn할 수 있다는 것을 보임. + generative models of images은 high quality image representation을 learn 할 수 있지만, they require over an order of magnitude more compute than contrastive models with the same performance.
+
+    > contrastive model: 이미지-텍스트 pair를 학습 -> 유사성을 극대화하는 -
+
+    -> 그래서 clip 모델 만든 친구들은 text의 exact words를 predict하는 대신, text 전체가 어떠한 이미지와 paired되었는지만 predict하도록 - / `explored training a system to solve the potentially easier proxy task` 함
+
+    > 여기서 말하는 easier proxy task가 텍스트와 이미지의 쌍을 학습시키는 방식?
+
+  - 암튼 contrastive model 사용해서 기본적인 Bag-of-Words encoding을 swapped 하고, & observed a further 4x efficiency improvement in the rate of zero-shot transfer to ImageNet.
+
+  2. how to train CLIP
+
+  - N개의 이미지-텍스트 쌍의 batch
+  - goal
+    - batch 내에서 가능한 N \* N 개의 이미지-텍스트 조합 중, 실제로 일어난 N개의 쌍을 예측.
+    - image encoder와 text encoder를 사용해서 batch에서 N개의 실제 pair된 image embeding과 text embeding의 (N개) cosine simmilarity는 maximizing, 그 외에 embeding들(N^2 - N개)에서는 minimizing이 되도록.
+    - symmetric cross entropy loss로 similarity scores를 최적화.
 
 ---
 
