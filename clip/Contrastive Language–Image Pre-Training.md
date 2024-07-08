@@ -404,6 +404,56 @@ open set of visual concepts
 
 ---
 
+### 2.4. Choosing and Scaling a Model
+
+- img encoder는 ResNet-50이랑 ViT를 consider함.
+
+  - `ResNetD` and `antialiased rect-2 blur pooling`를 using해서 make several modifications to the original version함.
+
+    > ResNetD: ResNet의 개선
+    >
+    > antialiased rect-2 blur pooling: img processing을 더 부드럽게 -> sampling 중 발생할 수 있는 왜곡을 줄임
+
+  - replace the global average pooling layer with an attention pooling mechanism
+
+    - attention pooling은 query가 the global average-pooled representation of the image에 따라 conditioned되는 “transformer-style”의 multi-head QKV attention의 single layer로 implemented 됨... ? 뭔소리야　이건
+
+    > global average pooling layer: cnn에서 사용되는 pooling 기법, GAP layer는 input feature map의 각 채널별로 평균값을 계산해서 하나의 숫자로 압축
+    >
+    > attention pooling mechanism: attention을 사용해서 중요한 feature를 강조. input data의 특정 부분에 가중치를 줌.
+
+  - transformer 앞에 결합된 combined patch와 position embeddings에 additional layer normalization을 하고, 기존 ViT와는 다른 initialization scheme을 사용.
+
+    > 기존 방법들을 수정해서 성능 향상 & 최적화 진행
+
+- text encoder는 attention all you need의 transformer를 기반으로 함.
+
+  - Radford et al. (2019).이 described한 architecture modifications가 적용됨.
+
+  - 63M-parameter 12-layer 512-wide model with 8 attention heads로 구성됨.
+
+  - 텍스트는 Lower-cased로 변환, (BPE)로 49,152 vocab size로 토큰화됨.
+
+    > BPE: 텍스트를 sub-word 단위로 분할해서 처리
+
+  - For computational efficiency, the max sequence length was capped at 76
+
+  - The text sequence는 [SOS] and [EOS] tokens로 묶임.
+
+    - Transformer의 highest layer에서 [EOS] token 위치의 activations가 feature representation of the text 로 처리..?
+
+    - 이러한 feature representation은 layer normalization 이후, multi-modal embedding space로 linearly projected됨.
+
+  - text encoder에는 pre-trained된 language model로 initialize하거나 add language modeling as an auxiliary objective 기능을 유지하기 위해 masked self-attention 사용 + though exploration of this is left as future work.
+
+    > masking: 각 token이 바로 앞 token만을 참고하도록 함.
+
+- 기존 computer vision research에서는 종종 width (Mahajan et al., 2018) or depth (He et al., 2016a)를 개별적으로 증가시켜 모델을 scaled함. but ResNet image encoder에선 width, depth, and resolution 모두에 allocating additional compute하는 것이 only allocating it to only one dimension 하는 것보다 outperforms 하다는 Tan & Le (2019)의 approach를 따름.
+
+- Tan & Le(2019)는 allocated to each dimension되는 ratio of compute를 EfficientNet architecture에 맞게 tune 함. clip 연구에선 width, depth, and resolution of model을 increasing하는데 additional compute를 equally하게 allocating하는 simple baseline을 사용함.
+
+- For the text encoder,
+
 ---
 
 - figure1.
