@@ -452,7 +452,9 @@ open set of visual concepts
 
 - Tan & Le(2019)는 allocated to each dimension되는 ratio of compute를 EfficientNet architecture에 맞게 tune 함. clip 연구에선 width, depth, and resolution of model을 increasing하는데 additional compute를 equally하게 allocating하는 simple baseline을 사용함.
 
-- For the text encoder,
+- for the text encoder, calculated된 ResNet의 width의 increase에 비례하도록 오직 모델의 width를 scale 했다. and depth를 전혀 do not scale했다. CLIP의 Performance가 the capacity of the text encoder에 less sensitive하다는 것을 found했기에.
+
+### 2.5. Training
 
 ---
 
