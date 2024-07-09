@@ -456,6 +456,48 @@ open set of visual concepts
 
 ### 2.5. Training
 
+- 5개의 ResNets 모델, 3개의 ViT 모델을 학습. + 모든 모델을 32 epochs로 학습.
+
+  - ResNet-50, ResNet-101, 그리고 EfficientNet-style model scaling을 follow하는, ResNet-50의 4배, 16배, 64배의 compute가 사용되는 3개의 ResNets를 더 학습. (They are denoted as RN50x4, RN50x16, and RN50x64 respectively)
+
+  - a ViT-B/32, a ViT-B/16, and a ViT-L/14를 학습.
+
+- decoupled weight decay regularization (Loshchilov & Hutter, 2017)가 적용된 Adam optimizer (Kingma & Ba, 2014)를 사용 and cosine schedule (Loshchilov & Hutter, 2016)을 사용해서 learning rate를 decay함.
+
+  > decoupled weight decay regularization: gains or biases가 아닌, all weights에 대해 decoupled.
+
+- Initial hyperparameters는 1 epoch 동안 trained된 RResNet50모델에서, grid searches, random search, and manual tuning을 combination을 사용해서 설정함.
+
+- computational constraints으로 인해 larger models에 대해 Hyper-parameters를 heuristically 방식으로 adapted함.
+
+- The learnable temperature parameter τ를 0.07에 equivalent하도록 initialized함. from (Wu et al., 2018) and logits를 100보다 크게 scaling하는 것을 prevent하기 위해 clipped함.
+
+  - which we found necessary to prevent training instability
+
+- use a very large minibatch size of 32,768.
+
+- Mixed-precision (Micikevicius et al., 2017)을 사용해서 training을 accelerate하고, save memory하도록 함.
+
+- To save additional memory, gradient checkpointing (Griewank & Walther, 2000; Chen et al., 2016), half-precision Adam statistics (Dhariwal et al., 2020), and half-precision stochastically rounded text encoder weights were used.
+
+  > gradient checkpointing: ?
+  >
+  > half-precision Adam statistics: ?
+  >
+  > half-precision stochastically rounded text encoder weights: ?
+
+- embedding similarities을 calculation하기 위해 individual GPUs가 오직 local batch of embeddings에 필요한 pairwise similarities의 subset만을 computing 하도록 sharded됨.
+
+  > pairwise similarities: ?
+  >
+  > sharded: ?
+
+- The largest ResNet model, RN50x64, took 18 days to train on 592 V100 GPUs while the largest Vision Transformer took 12 days on 256 V100 GPUs.
+
+- ViT-L/14 모델은, 성능 향상을 위해 336 pixel resolution으로 1 epoch를 추가적으로 pre-train함. FixRes랑 비슷한 preformance로 boost하기 위해. 이걸 ViT-L/14@336px라 부름.
+
+- Unless otherwise specified, all results reported in this paper as “CLIP” use this model (ViT-L/14@336px) which we found to perform best.
+
 ---
 
 - figure1.
