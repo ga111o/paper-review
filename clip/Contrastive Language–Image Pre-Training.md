@@ -8,6 +8,39 @@
 > > supervision (learning): 지도 (학습)<br>
 > > pre-training: 모델이 특정한 작업에 초점을 맞추기 전에, 대규모의 일반적인 데이터셋을 사용하여 기본적인 패턴과 구조를 학습하는 -
 
+clip은 2021년 openai에서 발표한 이미지 캡셔닝을 해주는 뉴럴 네트워크.
+
+기존 방식이 아닌, 이 당시 뜨고있던 새로운 접근방식을 사용해서 기존 캡션 모델에 비해 월등히 뛰어난 성능을 보이며, 당당히 sota자리를 차지함.
+
+물론, gpt4와 같은 lmm에게는 밀리지만, 훨씬 적은 컴퓨팅 파워를 가지고 gpt4와 같은 어마어마한 규모의 모델과 경쟁할만한 성능을 낸다는 것에 의의가 있음.
+
+최근 이런 캡션모델을 가지고 이것 저것 하는 프로젝트가 생겼는데, 되게 재밌어서 가져와봄.
+
+---
+
+목차는 아래와 같이 있음.
+
+0. Abstract
+1. Introduction and Motivating Work
+2. Approach
+3. Experiments
+4. Comparison to Human Performance
+5. Data Overlap Analysis
+6. Limitations
+7. Broader Impacts
+8. Related Work
+9. Conclusion
+
+목차만 봐도 뭔가 많죠?
+
+논문이 레퍼런스 뺀다고 해도 27페이지 짜리에다 최신 기술들을 다루다보니, 아직 3번째인 experiments의 초반까지밖에 읽지 못했음..
+
+4번 5번은 모델 자랑하는 페이지일 거라 쓱 훑으면서 넘겨도 limitations랑 conclusion 부분까지 이해하면서 읽으려면 상당히 오래걸릴 거 같음..
+
+잡설은 여기까지 하고 바로 abstract부터 볼게요.
+
+---
+
 0. Abstract
 
    > State-of-the-art computer vision systems are trained to predict a fixed set of predetermined object categories
@@ -117,14 +150,16 @@
     - autoregressive와 같은 Task-agnostic objectives(비종속 작업 목표?)는 모델 용량, 필요 컴퓨팅 자원 등을 늘리면서 성능을 향상.
 
       > task-agnostic objectives: 특정 task에 한정되지 않는 모델<br>
-      > autoregressive: 자기 회귀 모델링
+      > autoregressive: 자기 회귀 모델링, 현재 시점의 값을 이전 시점의 값들에 의존하여 예측하는 방식. 모델이 자기 자신(이전의 데이터 포인트들)에 regression한다는 것
 
     - text2text는 입출력 인터페이스?를 텍스트로 standardized함. -> task-agnostic objectives가 downstream dataset으로 zero-shot transfer 할 수 있도록 함.
 
-      > input-output interface: ?<br>
+      > input-output interface: 입출력 간의 상호작용 방식<br>
       > downstream dataset: fine tuning을 위한 dataset. <br>downstream == fine tuning으로 봐도 무방할듯.
 
     - nlp쪽에선 dataset을 만들 때에는 기존 high-quality의 crowed-datasets보다 web-scale collections을 사용한 pre-training이 더 좋았다고 함. -> nlp처럼 컴퓨터 비전도 기존 crowd labeled dataset 사용하지 말고, 웹에서 싹 긁어오는 건 어떻냐고 제안.
+
+    - 즉, 위 내용들을 가지고 caption모델을 만들겠다고 하는 것.
 
     1.  `The olfactory bulb: coding and processing of odor molecule information` Mori et al. (1999)
 
@@ -158,11 +193,13 @@
           > modernized: ? <br>
           > useful: ?
 
-    5.  6.  ...
+    5.  6.  ...<br><br><br><br><br><br>
 
     6.  CLIP
 
         - CLIP은 이런 연구 흐름?의 최신 결과로, 이미지-텍스트 흐름의 최신 결과물로, 이미지-텍스트 pair로 학습된 표현이 다양한 transfer learning task에서 상당한 성능이 나옴을 보임.
+
+          > transfer learning: 이미 학습된 모델의 지식을 다른 관련 문제에 적용
 
     <br>
 
@@ -196,9 +233,11 @@
 
     - 둘 다 static softmax classifier를 사용해서 예측 -> dynamic-ouput이 부족..? -> flexibility랑 zero-shot의 한계
 
-    <br>
+      > softmax: 입력 벡터를 각 요소의 확률로 변환하여 모든 클래스의 확률 합이 1이 되도록 하는 함수
 
-    > ㅇㅇㄹㅇㄹㅇㄹ
+      > static softmax classifier: 주어진 입력 데이터에 대해 소프트맥스 함수를 적용하여 클래스 확률을 계산하고, 가장 높은 확률을 가진 클래스를 선택하는 분류 모델
+
+    <br>
 
     - weak supervision: Mahajan et al. (2018), Kolesnikov et al. (2019)은 백만~십억 개의 이미지로 모델을 train하는데 accelerator years가 됨..?
 
@@ -497,6 +536,14 @@ open set of visual concepts
 - ViT-L/14 모델은, 성능 향상을 위해 336 pixel resolution으로 1 epoch를 추가적으로 pre-train함. FixRes랑 비슷한 preformance로 boost하기 위해. 이걸 ViT-L/14@336px라 부름.
 
 - Unless otherwise specified, all results reported in this paper as “CLIP” use this model (ViT-L/14@336px) which we found to perform best.
+
+---
+
+## 3. Experiments
+
+### 3.1. Zero-Shot Transfer
+
+3.1.1. MOTIVATION
 
 ---
 
